@@ -241,8 +241,23 @@ en comptent des centaines de millions, issus de fuites passées.
    l'aide du dictionnaire.
 3. Quels mots de passe résistent ? Pourquoi ?
 
+> 📤 **À rendre** - depuis `casser.py`, consignez les mots de passe retrouvés
+> et les comptes qui partagent un même mot de passe :
+>
+> ```python
+> import sys
+> sys.path.append("..")
+> from rendu import consigner
+>
+> consigner("03.mots_de_passe", {"identifiant": "mot de passe", ...})  # ceux que vous avez retrouvés
+> consigner("03.comptes_identiques", ["identifiant", "identifiant"])
+> ```
+
 <details>
 <summary>Voir la correction</summary>
+
+> Les valeurs ci-dessous sont celles du **jeu de référence**. Les vôtres
+> sont différentes : la démarche, elle, est la même.
 
 1. `bruno.petit` et `emma.moreau` ont la même empreinte
    (`ab4f63f9…`) : ils ont le même mot de passe. Sans sel, la fuite révèle
@@ -254,22 +269,32 @@ en comptent des centaines de millions, issus de fuites passées.
 ```python
 import csv
 import hashlib
+import sys
 import time
+
+sys.path.append("..")
+from rendu import consigner
 
 debut = time.perf_counter()
 with open("wordlist.txt", encoding="utf-8") as f:
     table = {hashlib.md5(mot.encode()).hexdigest(): mot
              for mot in (ligne.strip() for ligne in f) if mot}
 
-trouves = 0
+retrouves, par_empreinte = {}, {}
 with open("fuite.csv", encoding="utf-8") as f:
     for ligne in csv.DictReader(f):
+        par_empreinte.setdefault(ligne["md5"], []).append(ligne["identifiant"])
         mot = table.get(ligne["md5"])
         if mot:
-            trouves += 1
+            retrouves[ligne["identifiant"]] = mot
         print(f"{ligne['identifiant']:15} {mot or '- résiste -'}")
 
-print(f"\n{trouves} mots de passe retrouvés en {time.perf_counter() - debut:.3f} s")
+print(f"\n{len(retrouves)} mots de passe retrouvés en {time.perf_counter() - debut:.3f} s")
+identiques = next(ids for ids in par_empreinte.values() if len(ids) > 1)
+print("Même mot de passe :", identiques)
+
+consigner("03.mots_de_passe", retrouves)
+consigner("03.comptes_identiques", identiques)
 ```
 
 9 comptes sur 12 tombent en quelques millisecondes : `azerty`, `soleil`,
@@ -301,6 +326,14 @@ bibliothèque standard :
 Mesurez ensuite le temps d'un appel à `enregistrer`, et comparez-le à celui
 d'un MD5. Combien de temps faudrait-il pour tester le dictionnaire contre
 **un seul** compte ? Et contre un million de comptes ?
+
+> 📤 **À rendre** - le script lui-même. Il sera testé : deux enregistrements
+> du même mot de passe doivent différer, `verifier` doit accepter le bon mot de
+> passe et refuser les autres, et le calcul doit être volontairement lent.
+>
+> ```bash
+> python ../rendu.py joindre 03.stocker stocker.py
+> ```
 
 <details>
 <summary>Voir la correction</summary>

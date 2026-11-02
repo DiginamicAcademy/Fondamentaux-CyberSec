@@ -169,6 +169,18 @@ API de prédiction).
 3. Placez trois de ces risques sur la matrice et choisissez une option de
    traitement.
 
+> 📤 **À rendre** - rédigez votre analyse dans `tp/stride.md`, avec deux
+> tableaux : les menaces (colonnes *STRIDE*, *Élément*, *Menace*, *Mesure*,
+> au moins une ligne par lettre) et les trois risques évalués (*Risque*,
+> *Gravité*, *Vraisemblance*, *Niveau*, *Traitement*). Puis :
+>
+> ```bash
+> python rendu.py joindre 02.stride stride.md
+> ```
+>
+> Cette partie est notée par votre formateur·rice : la pertinence compte plus
+> que l'exhaustivité.
+
 <details>
 <summary>Voir la correction</summary>
 

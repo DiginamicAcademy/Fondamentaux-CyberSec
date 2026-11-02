@@ -193,8 +193,8 @@ très sollicitée pendant la nuit. Vous disposez de son journal d'accès,
                                                                                                  statut
 ```
 
-S'il est absent, générez-le avec `python generer_journal.py` - sans lire ce
-script, qui contient la solution.
+Ce journal a été généré pour vous au chapitre 00 : l'attaque que vous allez
+reconstituer est la vôtre, avec ses propres adresses, horaires et volumes.
 
 ### Étape 1 - Charger le journal
 
@@ -219,7 +219,7 @@ colonnes `ip`, `utilisateur`, `date`, `methode`, `chemin`, `statut`, `taille`,
 3. Repérez la **force brute** (échecs 401 par IP et par minute). A-t-elle
    réussi ? Quel compte a été compromis ?
 4. Qu'a fait l'attaquant ensuite, et quel volume de données est sorti ?
-5. Les adresses `203.0.113.66` et `192.0.2.77` sont-elles le même
+5. L'adresse du scanner et celle de la force brute sont-elles le même
    attaquant ? Sur quels indices pouvez-vous vous appuyer ?
 
 ### Étape 4 - Répondre
@@ -228,14 +228,39 @@ Rédigez en quelques lignes : la chronologie de l'incident, les mesures
 immédiates, les notifications à faire, et trois mesures pour que cela ne se
 reproduise pas.
 
+> 📤 **À rendre** - les conclusions de votre enquête, puis votre rapport :
+>
+> ```python
+> consigner("08.enquete", {
+>     "ip_scanner": "…",                 # adresse du scanner
+>     "fichier_decouvert": "…",          # chemin trouvé par le scanner (réponse 200)
+>     "ip_force_brute": "…",             # adresse de la force brute
+>     "compte_compromis": "…",           # compte utilisé pour l'exfiltration
+>     "heure_compromission": "HH:MM",    # heure de la connexion réussie
+>     "volume_mo": 0.0,                  # mégaoctets exfiltrés (1 Mo = 1 000 000 octets)
+> })
+> ```
+>
+> Rédigez le rapport dans `tp/08-detection/rapport_incident.md`, avec quatre
+> parties : *Chronologie*, *Mesures immédiates*, *Notifications*,
+> *Prévention*. Il est noté par votre formateur·rice.
+>
+> ```bash
+> python ../rendu.py joindre 08.rapport rapport_incident.md
+> ```
+
 <details>
 <summary>Voir la correction</summary>
 
 ```python
 import re
+import sys
 from urllib.parse import unquote
 
 import pandas as pd
+
+sys.path.append("..")
+from rendu import consigner
 
 # Étape 1 - Chargement
 MOTIF = re.compile(r'(?P<ip>\S+) \S+ (?P<utilisateur>\S+) \[(?P<date>[^\]]+)\] '
@@ -259,10 +284,12 @@ par_ip = journal.groupby("ip").agg(
 )
 print(par_ip.sort_values("requetes", ascending=False).head())
 
-# Étape 3.1 - Le scanner
-scanner = journal[journal["ip"] == "203.0.113.66"]
-print(scanner[scanner["statut"] == 404]["chemin"].unique())
-print(scanner[(scanner["statut"] == 200) & ~scanner["chemin"].str.contains("'")]["chemin"].unique())
+# Étape 3.1 - Le scanner : l'adresse qui accumule les 404
+ip_scanner = par_ip["erreurs_404"].idxmax()
+scanner = journal[journal["ip"] == ip_scanner]
+print(ip_scanner, scanner[scanner["statut"] == 404]["chemin"].unique())
+decouvert = scanner[(scanner["statut"] == 200) & ~scanner["chemin"].str.contains("'")]["chemin"].unique()
+print("Trouvé :", decouvert)
 
 # Étape 3.2 - Injection SQL
 SQLI = re.compile(r"(?:'|--|\bunion\b|\bselect\b|\bor\s+1=1)", re.I)
@@ -272,7 +299,9 @@ print(sqli[["date", "ip", "statut", "taille", "chemin"]].to_string())
 # Étape 3.3 - Force brute : échecs par minute
 echecs = journal[journal["statut"] == 401].set_index("date").groupby("ip").resample("1min").size()
 print(echecs[echecs > 10])
-attaquant = journal[journal["ip"] == "192.0.2.77"]
+ip_force_brute = par_ip["echecs_401"].idxmax()
+attaquant = journal[journal["ip"] == ip_force_brute]
+succes = attaquant[(attaquant["statut"] == 200) & (attaquant["chemin"] == "/api/connexion")]
 print(attaquant[attaquant["statut"] == 200][["date", "utilisateur", "chemin"]].head(3))
 
 # Étape 3.4 - Exfiltration
@@ -281,7 +310,19 @@ print(export.groupby(["ip", "utilisateur"]).agg(
     debut=("date", "min"), fin=("date", "max"),
     pages=("chemin", "size"), megaoctets=("taille", lambda s: s.sum() / 1e6),
 ))
+
+consigner("08.enquete", {
+    "ip_scanner": ip_scanner,
+    "fichier_decouvert": decouvert[0],
+    "ip_force_brute": ip_force_brute,
+    "compte_compromis": export["utilisateur"].iloc[0],
+    "heure_compromission": succes["date"].iloc[0].strftime("%H:%M"),
+    "volume_mo": round(export["taille"].sum() / 1e6, 1),
+})
 ```
+
+Les constats qui suivent portent sur le **jeu de référence** ; votre journal
+raconte la même histoire, avec d'autres adresses, horaires et volumes.
 
 **Étape 2.** 1 713 requêtes, 43 adresses IP. Le trafic normal suit les heures
 de bureau (80 à 100 requêtes par heure de 8 h à 18 h), mais on compte **51

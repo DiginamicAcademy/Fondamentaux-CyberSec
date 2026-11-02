@@ -186,6 +186,13 @@ et le type d'attaquant le plus probable.
 6. Après une fuite, impossible de savoir quels comptes ont consulté le jeu de
    données : il est accessible par un compte partagé `data_team`.
 
+> 📤 **À rendre** - le critère DICP **principal** de chaque incident, une
+> lettre par numéro (D, I, C ou P) :
+>
+> ```bash
+> python rendu.py consigner 01.incidents '{"1": "?", "2": "?", "3": "?", "4": "?", "5": "?", "6": "?"}'
+> ```
+
 <details>
 <summary>Voir la correction</summary>
 

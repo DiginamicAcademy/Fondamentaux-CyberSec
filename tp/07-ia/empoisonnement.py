@@ -1,17 +1,26 @@
 """TP du chapitre 07 - empoisonner un détecteur de fraude.
 
 Le jeu de données est synthétique : 10 % de transactions frauduleuses (classe 1).
+Il dépend de l'apprenant·e déclaré·e dans ../rendu.json ; sans rendu.json, on
+obtient le jeu de référence des corrections.
 Complétez les parties marquées TODO.
 """
+import pathlib
+import sys
+
 import numpy as np
 from sklearn.datasets import make_classification
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, recall_score
 from sklearn.model_selection import train_test_split
 
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
+from rendu import graine  # noqa: E402
+
+GRAINE = graine()
 X, y = make_classification(n_samples=5000, n_features=10, n_informative=6,
                            weights=[0.9, 0.1], class_sep=1.5, flip_y=0,
-                           random_state=42)
+                           random_state=42 if GRAINE is None else GRAINE)
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3,
                                                     stratify=y, random_state=0)
 rng = np.random.default_rng(0)

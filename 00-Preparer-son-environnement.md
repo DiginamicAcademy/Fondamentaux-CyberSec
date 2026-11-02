@@ -13,6 +13,7 @@ votre connexion est lente.
 - Construire l'image du laboratoire.
 - Savoir lancer un script dans le laboratoire et y ouvrir un terminal.
 - Comprendre pourquoi on pratique la sécurité **dans un environnement isolé**.
+- Créer son **fichier de rendu** et générer ses données personnelles.
 
 ---
 
@@ -88,7 +89,57 @@ Python 3.12.x
 Laboratoire prêt !
 ```
 
-## 4. Les trois commandes à retenir
+## 4. Créer votre rendu
+
+Les TP sont évalués à partir d'un fichier, `tp/rendu.json`, que vous complétez
+au fil de la journée et que vous déposez à la fin. Créez-le **maintenant**, avec
+vos prénom et nom tels qu'ils figurent sur la liste d'appel :
+
+```bash
+docker compose run --rm lab python rendu.py init "Prénom Nom"
+```
+
+Cette commande fait deux choses :
+
+1. elle crée `rendu.json` à votre nom ;
+2. elle **génère vos données personnelles** pour les TP : fuite de mots de
+   passe, jeton JWT, dossiers patients, journal d'accès. Les mots de passe à
+   casser, les secrets à retrouver, les adresses des attaquants dépendent de
+   votre nom.
+
+Conséquence : **vos réponses ne sont pas celles de votre voisin·e**, ni celles
+des corrections. Les corrections montrent la démarche et les résultats sur un
+*jeu de référence* ; vos chiffres à vous sont différents, et c'est eux qu'il
+faut rendre.
+
+À la fin de chaque TP, un encadré **📤 À rendre** indique quoi enregistrer, avec
+deux commandes à lancer depuis le dossier `tp/` (ou `../rendu.py` depuis un
+sous-dossier) :
+
+| Commande | Effet |
+|---|---|
+| `python rendu.py consigner <clé> <valeur>` | enregistre une réponse : un texte, un nombre, ou du JSON entre apostrophes (`'{"1": "C"}'`) |
+| `python rendu.py joindre <clé> <fichier>` | joint le contenu d'un fichier (script, CSV, Markdown) |
+| `python rendu.py etat` | affiche ce qui est fait et ce qui manque |
+
+Vous pouvez aussi consigner directement depuis un script Python :
+
+```python
+import sys
+sys.path.append("..")          # rendu.py est dans le dossier parent
+from rendu import consigner
+
+consigner("03.comptes_identiques", ["alice.martin", "bruno.petit"])
+```
+
+Une réponse peut être consignée autant de fois que nécessaire : seule la
+dernière compte.
+
+> ⚠️ Ne relancez pas `init` avec un autre nom : vos données changeraient et vos
+> réponses ne correspondraient plus. Si vous devez tout recommencer :
+> `python rendu.py init "Prénom Nom" --forcer`.
+
+## 5. Les trois commandes à retenir
 
 | Commande | Effet |
 |---|---|

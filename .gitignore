@@ -127,3 +127,20 @@ WARP.md
 .aider*
 .specstory/
 .ai/
+
+# --- TP : rendu et données personnelles de chaque apprenant·e ---
+# Générés par `python rendu.py init "Prénom Nom"` (chapitre 00) : propres à
+# chaque personne, ils n'ont pas leur place dans le dépôt du cours.
+tp/rendu.json
+tp/stride.md
+tp/03-crypto/fuite.csv
+tp/04-auth/jeton.txt
+tp/06-donnees/patients.csv
+tp/06-donnees/liste_electorale.csv
+tp/06-donnees/anonyme.csv
+tp/08-detection/access_log.txt
+tp/08-detection/rapport_incident.md
+
+# --- Évaluation des TP : NE JAMAIS PUBLIER ---
+# Correcteur et grille, à déplacer dans le dépôt privé <cours>-Peda.
+evaluation-privee/

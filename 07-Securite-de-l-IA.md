@@ -201,6 +201,16 @@ l'étape facultative.
    avec le modèle sain. Quelle mesure supplémentaire aurait repéré cette
    attaque ?
 
+> 📤 **À rendre** - le rappel (part des fraudes détectées, entre 0 et 1) du
+> modèle sain et du modèle entraîné sur les étiquettes inversées, mesurés sur
+> le jeu de test. Votre jeu de données est personnel : vos valeurs diffèrent
+> de celles de la correction.
+>
+> ```python
+> consigner("07.rappel_sain", recall_score(y_test, reference.predict(X_test)))
+> consigner("07.rappel_inverse", recall_score(y_test, modele_inverse.predict(X_test)))
+> ```
+
 <details>
 <summary>Voir la correction</summary>
 
@@ -211,10 +221,16 @@ l'étape facultative.
 fraudes = np.flatnonzero(y_train == 1)
 y_inverse = y_train.copy()
 y_inverse[rng.choice(fraudes, size=len(fraudes) // 2, replace=False)] = 0
-evaluer("Étiquettes inversées (50 %)", entrainer(X_train, y_inverse), X_test, y_test)
+modele_inverse = entrainer(X_train, y_inverse)
+evaluer("Étiquettes inversées (50 %)", modele_inverse, X_test, y_test)
+
+sys.path.append("..")
+from rendu import consigner
+consigner("07.rappel_sain", recall_score(y_test, reference.predict(X_test)))
+consigner("07.rappel_inverse", recall_score(y_test, modele_inverse.predict(X_test)))
 ```
 
-Résultat obtenu :
+Résultat sur le **jeu de référence** :
 
 ```text
 Modèle sain                         exactitude = 97.0%   fraudes détectées (rappel) = 75.3%
@@ -299,9 +315,23 @@ courriel.
 2. Classez ce qui s'est passé selon l'OWASP Top 10 pour les LLM.
 3. Modifiez la fonction `executer_outil` - **et uniquement elle** - pour que
    l'assistant ne puisse plus exfiltrer de données, quoi que contienne le
-   document.
+   document. Elle doit appliquer trois règles :
+   - **liste blanche** : envoi uniquement vers des adresses `@exemple.fr` ;
+   - **filtrage du contenu** : refus de tout courriel qui reprend une valeur
+     de `CONTEXTE_INTERNE` ;
+   - **validation humaine** : demande de confirmation avec `input()`, l'envoi
+     n'ayant lieu que si l'utilisateur répond `o`.
 4. La fausse recommandation "recruté sans entretien technique" est-elle
    corrigée ? Que proposez-vous ?
+
+> 📤 **À rendre** - votre `assistant_jouet.py`. Il sera soumis à des
+> documents piégés : destinataire externe, destinataire interne avec des
+> données internes, et demande légitime refusée puis acceptée par
+> l'utilisateur. Ne modifiez ni `modele_simule` ni `construire_contexte`.
+>
+> ```bash
+> python ../rendu.py joindre 07.assistant assistant_jouet.py
+> ```
 
 <details>
 <summary>Voir la correction</summary>

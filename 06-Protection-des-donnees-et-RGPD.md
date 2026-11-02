@@ -193,11 +193,11 @@ Les fichiers sont dans `tp/06-donnees/` :
 
 - `patients.csv` : 300 dossiers fictifs, avec identité, date de naissance,
   code postal, sexe et diagnostic ;
-- `liste_electorale.csv` : une liste "publique" fictive de 580 personnes,
+- `liste_electorale.csv` : une liste "publique" fictive d'environ 580 personnes,
   avec nom, prénom, date de naissance, code postal et sexe.
 
-S'ils sont absents, générez-les avec `python generer_donnees.py`. Travaillez
-dans un script `tp_donnees.py`, avec `pandas`.
+Ils ont été générés pour vous au chapitre 00. Travaillez dans un script
+`tp_donnees.py`, avec `pandas`.
 
 ### Étape 1 - Pseudonymiser
 
@@ -215,6 +215,12 @@ de patients pouvez-vous ré-identifier **avec certitude**, c'est-à-dire avec
 une seule correspondance dans la liste ? Affichez quelques noms avec leur
 diagnostic.
 
+> 📤 **À rendre** - le nombre de patients ré-identifiés avec certitude :
+>
+> ```python
+> consigner("06.reidentifies", len(trouves))
+> ```
+
 ### Étape 3 - Mesurer le k-anonymat
 
 Écrivez une fonction `mesurer(df, qi)` qui affiche, pour une liste de
@@ -230,6 +236,17 @@ Généralisez : décennie de naissance au lieu de la date, département au lieu 
 code postal. Mesurez de nouveau. Que faire des groupes trop petits ? Visez
 **k ≥ 5** et **l ≥ 2**, puis vérifiez que l'attaque de l'étape 2 échoue.
 
+> 📤 **À rendre** - votre jeu anonymisé, enregistré dans `anonyme.csv` avec
+> les colonnes `decennie` (ex. `1980`), `departement` (ex. `69`), `sexe` et
+> `diagnostic`. Il sera contrôlé : aucun identifiant ni quasi-identifiant
+> précis, k ≥ 5, l ≥ 2, aucune ré-identification possible, et au moins la
+> moitié des lignes conservées - un jeu vide est anonyme, mais inutile.
+>
+> ```python
+> anonyme.to_csv("anonyme.csv", index=False)
+> joindre("06.jeu_anonyme", "anonyme.csv")
+> ```
+
 <details>
 <summary>Voir la correction</summary>
 
@@ -237,8 +254,12 @@ code postal. Mesurez de nouveau. Que faire des groupes trop petits ? Visez
 import hashlib
 import hmac
 import os
+import sys
 
 import pandas as pd
+
+sys.path.append("..")
+from rendu import consigner, joindre
 
 QI = ["date_naissance", "code_postal", "sexe"]
 
@@ -271,6 +292,7 @@ def reidentifier(jeu: pd.DataFrame, cles: list[str], liste: pd.DataFrame) -> pd.
 trouves = reidentifier(pseudo, QI, electeurs)
 print(f"{len(trouves)} patients ré-identifiés sur {len(pseudo)}")
 print(trouves[["prenom", "nom", "diagnostic"]].head())
+consigner("06.reidentifies", len(trouves))
 
 
 # Étape 3 - Mesure
@@ -305,9 +327,13 @@ electeurs_gen = electeurs.assign(decennie=electeurs["date_naissance"].str[:3] + 
                                  departement=electeurs["code_postal"].str[:2])
 print(f"Ré-identifiés après anonymisation : "
       f"{len(reidentifier(anonyme, QI_GEN, electeurs_gen))}")
+
+anonyme.to_csv("anonyme.csv", index=False)
+joindre("06.jeu_anonyme", "anonyme.csv")
 ```
 
-Résultats :
+Résultats sur le **jeu de référence** (les vôtres sont du même ordre, sans
+être identiques) :
 
 - **Étape 2** : **180 patients sur 300** sont ré-identifiés avec certitude,
   avec leur diagnostic - c'est-à-dire tous ceux qui figurent sur la liste

@@ -64,9 +64,42 @@ production. Ce cours en pose les fondations.
    d'ouvrir la correction.
 3. Les fichiers des TP sont dans le dossier `tp/` du dépôt. Le
    [chapitre 00](00-Preparer-son-environnement.md) explique comment les
-   lancer.
-4. Terminez par le [quiz final](09-Quiz-final.md) : visez au moins 15 bonnes
-   réponses sur 20.
+   lancer, et comment créer votre **fichier de rendu**.
+4. À la fin de chaque TP, complétez votre rendu comme l'indique l'encadré
+   **📤 À rendre**.
+5. Terminez par le [quiz final](09-Quiz-final.md) : visez au moins 15 bonnes
+   réponses sur 20. Puis déposez votre rendu.
+
+## Évaluation
+
+Les TP sont évalués sur un fichier unique, `tp/rendu.json`, créé au
+chapitre 00 et complété à la fin de chaque TP : des réponses (mots de passe
+cassés, secret retrouvé, adresses des attaquants…) et des fichiers joints
+(scripts corrigés, jeu anonymisé, analyses rédigées).
+
+Les données des TP sont **personnelles** : elles sont générées à partir de
+votre nom. Les réponses des corrections, comme celles de vos voisin·e·s, ne
+sont donc pas les vôtres. Les scripts joints sont **exécutés** et soumis à des
+attaques pour vérifier vos corrections.
+
+| Chapitre | Ce qui est évalué | Points |
+|---|---|---|
+| 01 | critères DICP des incidents | 1 |
+| 02 | analyse STRIDE et évaluation des risques *(notée par le formateur ou la formatrice)* | 2 |
+| 03 | mots de passe retrouvés, comptes identiques, stockage scrypt testé | 2,5 |
+| 04 | secret JWT, jeton forgé, secrets débusqués | 3 |
+| 05 | mot de passe administrateur, facture confidentielle, API corrigée et attaquée | 3,5 |
+| 06 | nombre de ré-identifications, jeu anonymisé contrôlé | 3 |
+| 07 | rappels du détecteur de fraude, assistant sécurisé et attaqué | 2,5 |
+| 08 | conclusions de l'enquête, rapport d'incident *(noté par le formateur ou la formatrice)* | 2,5 |
+| **Total** | | **20** |
+
+Les étapes facultatives et le quiz final ne sont pas notés. Avant de déposer,
+vérifiez que rien ne manque :
+
+```bash
+docker compose run --rm lab python rendu.py etat
+```
 
 > ⚖️ **Cadre légal.** Toutes les attaques de ce cours se pratiquent sur
 > **vos propres conteneurs**, avec des données fictives. Accéder ou se

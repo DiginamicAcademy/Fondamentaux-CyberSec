@@ -7,7 +7,18 @@ question, sauf mention contraire. Répondez sans relire le cours, notez vos
 réponses, puis ouvrez la correction.
 
 **Objectif : au moins 15 bonnes réponses.** En dessous, la correction indique
-le chapitre à revoir pour chaque question.
+le chapitre à revoir pour chaque question. Ce quiz n'est pas noté : il sert à
+repérer ce qu'il faut revoir.
+
+> 📤 **Avant de partir, déposez votre rendu.** Vérifiez qu'il est complet :
+>
+> ```bash
+> docker compose run --rm lab python rendu.py etat
+> ```
+>
+> Puis déposez le fichier `tp/rendu.json` à l'endroit indiqué par votre
+> formateur·rice. C'est **le seul fichier à rendre** : vos scripts et
+> analyses y sont déjà joints.
 
 ---
 

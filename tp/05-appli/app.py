@@ -4,12 +4,18 @@
 déployer ce code, ni s'en inspirer ailleurs que pour apprendre à le corriger.
 """
 import hashlib
+import pathlib
 import sqlite3
+import sys
 
 from flask import Flask, g, jsonify, request
 
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
+from rendu import graine, parametres  # noqa: E402  (données propres à chaque apprenant·e)
+
 app = Flask(__name__)
 BASE = "/tmp/pme.db"
+PARAMETRES = parametres(graine())
 
 
 def initialiser_base() -> None:
@@ -32,7 +38,7 @@ def initialiser_base() -> None:
     con.executemany("INSERT INTO utilisateurs (identifiant, mdp_sha256, role) VALUES (?, ?, ?)", [
         (identifiant, hashlib.sha256(mdp.encode()).hexdigest(), role)
         for identifiant, mdp, role in [
-            ("admin", "Admin2025", "admin"),
+            ("admin", PARAMETRES["mdp_admin"], "admin"),
             ("bruno.petit", "azerty", "commercial"),
             ("emma.moreau", "Q8!rT2#vX9pL", "commercial"),
         ]
@@ -42,7 +48,7 @@ def initialiser_base() -> None:
         ("bruno.petit", "Garage Moreau", 3400.50),
         ("emma.moreau", "Pharmacie Durand", 18900.00),
         ("emma.moreau", "Cabinet Girard", 7200.00),
-        ("admin", "Contrat de maintenance confidentiel", 98000.00),
+        ("admin", "Contrat de maintenance confidentiel", PARAMETRES["montant_confidentiel"]),
     ])
     con.commit()
     con.close()

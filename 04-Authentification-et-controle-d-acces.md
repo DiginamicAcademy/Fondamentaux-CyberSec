@@ -201,17 +201,14 @@ moteur = create_engine(os.environ["ENTREPOT_URL"])
 
 ## 🛠️ TP 1 - Forger un JWT
 
-Les fichiers sont dans `tp/04-auth/`. Le fichier `jeton.txt` contient le JWT
-qu'une API a remis à l'utilisateur `bruno.petit`. S'il n'existe pas encore,
-générez-le :
+Les fichiers sont dans `tp/04-auth/`. Le fichier `jeton.txt`, généré pour vous
+au chapitre 00, contient le JWT qu'une API a remis à l'utilisateur
+`bruno.petit`.
 
 ```bash
 docker compose run --rm lab
 cd 04-auth
-python generer_jeton.py
 ```
-
-*(Ne lisez pas le script générateur : il contient la solution.)*
 
 1. **Lisez** le contenu du jeton sans connaître la clé : quel rôle a Bruno ?
    Utilisez `jwt.get_unverified_header()` et
@@ -223,13 +220,28 @@ python generer_jeton.py
 3. **Forgez** un jeton valide pour Bruno avec le rôle `admin`.
 4. Quelles mesures auraient empêché l'attaque ?
 
+> 📤 **À rendre** - le secret retrouvé et le jeton forgé, qui sera vérifié
+> avec le secret de *votre* serveur :
+>
+> ```python
+> consigner("04.secret_jwt", secret)
+> consigner("04.jeton_admin", faux)
+> ```
+
 <details>
 <summary>Voir la correction</summary>
 
+> Les valeurs ci-dessous sont celles du **jeu de référence**. Votre secret est
+> différent.
+
 ```python
+import sys
 import warnings
 
 import jwt
+
+sys.path.append("..")
+from rendu import consigner
 
 # Les versions récentes de PyJWT avertissent quand une clé HMAC fait moins de
 # 32 octets : un bon signal en temps normal, du bruit pendant l'attaque.
@@ -261,6 +273,9 @@ charge["role"] = "admin"
 faux = jwt.encode(charge, secret, algorithm="HS256")
 print(faux)
 print(jwt.decode(faux, secret, algorithms=["HS256"]))
+
+consigner("04.secret_jwt", secret)
+consigner("04.jeton_admin", faux)
 ```
 
 Le secret est `bienvenue`, retrouvé instantanément. L'attaquant peut
@@ -297,6 +312,13 @@ prêt à être publié sur GitHub. Il contient plusieurs secrets oubliés.
 2. Combien de secrets trouvez-vous ? Lequel est correctement géré ?
 3. Comment corriger ce projet avant de le publier ?
 
+> 📤 **À rendre** - la liste des secrets trouvés, sous la forme
+> `"fichier:ligne"`. Les fausses alertes coûtent des points :
+>
+> ```python
+> consigner("04.secrets", ["projet_exemple/config.py:6", ...])
+> ```
+
 <details>
 <summary>Voir la correction</summary>
 
@@ -315,8 +337,11 @@ MOTIFS = {
     "JWT": re.compile(r"eyJ[\w-]+\.eyJ[\w-]+\.[\w-]+"),
 }
 
+sys.path.append("..")
+from rendu import consigner
+
 racine = pathlib.Path(sys.argv[1] if len(sys.argv) > 1 else "projet_exemple")
-total = 0
+trouves = []
 for fichier in sorted(p for p in racine.rglob("*") if p.is_file()):
     try:
         lignes = fichier.read_text(encoding="utf-8").splitlines()
@@ -326,9 +351,10 @@ for fichier in sorted(p for p in racine.rglob("*") if p.is_file()):
         # premier motif reconnu seulement : une ligne n'est signalée qu'une fois
         nom = next((nom for nom, motif in MOTIFS.items() if motif.search(ligne)), None)
         if nom:
-            total += 1
+            trouves.append(f"{fichier.as_posix()}:{numero}")
             print(f"{fichier}:{numero}: [{nom}] {ligne.strip()[:90]}")
-print(f"\n{total} secret(s) potentiel(s)")
+print(f"\n{len(trouves)} secret(s) potentiel(s)")
+consigner("04.secrets", trouves)
 ```
 
 Résultat : 5 secrets.
