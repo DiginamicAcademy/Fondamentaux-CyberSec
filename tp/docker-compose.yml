@@ -1,0 +1,23 @@
+# Laboratoire du cours. Le dossier tp/ est monté dans /tp : les fichiers
+# modifiés sur votre poste sont vus immédiatement dans les conteneurs.
+services:
+  # Poste de travail : on y lance les scripts des TP.
+  lab:
+    build: .
+    image: cyber-lab
+    volumes:
+      - .:/tp
+    working_dir: /tp
+    stdin_open: true
+    tty: true
+
+  # API vulnérable du chapitre 05, exposée sur la seule boucle locale.
+  api:
+    build: .
+    image: cyber-lab
+    volumes:
+      - .:/tp
+    working_dir: /tp/05-appli
+    command: python app.py
+    ports:
+      - "127.0.0.1:5000:5000"

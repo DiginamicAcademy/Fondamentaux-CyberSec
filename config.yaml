@@ -1,0 +1,21 @@
+# Déclaration du cours, en deux sections. Vérifiée à chaque push qui la modifie
+# (workflow "Vérifier").
+#
+# - course : ce que vise le cours. Recopiée à chaque version dans sa partie
+#   pédagogique, le dépôt privé <ce-dépôt>-Peda, où elle sert à produire
+#   RNCP.yaml et le syllabus.
+# - credits : qui signe le cours, et avec quels comptes GitHub. Reprise
+#   par le support de cours, elle reste dans ce dépôt.
+course:
+  name: "Les fondamentaux de la cybersécurité et de la sécurité informatique"
+  RNCP:     ## Expert en informatique et systèmes d'information (EISI)
+    - RNCP40573
+  RNCPBloc: ## option Data-IA : construire et implémenter des modèles de big data et d'IA
+    - RNCP40573BC05
+  timing: 1 ## durée prévue en jours
+
+credits:
+  authors: ## signataires du cours, dans l'ordre où ils doivent apparaître
+    - name: Jean-François Vial
+      github: ## comptes GitHub avec lesquels il commite, pour reconnaître ses commits
+        - JeffDiginamic

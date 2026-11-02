@@ -1,0 +1,7 @@
+# Bibliothèques du laboratoire, installées dans l'image Docker.
+cryptography>=43
+PyJWT>=2.9
+pandas>=2.2
+scikit-learn>=1.5
+flask>=3.0
+requests>=2.32
